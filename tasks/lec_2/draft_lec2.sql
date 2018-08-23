@@ -1,6 +1,6 @@
 REM   Script: draft_02
 REM   lec2
-
+--Задание 1
 select d.V_NAME,SUM(contr.F_SUM),COUNT(contr.F_SUM),COUNT(contr.ID_CONTRACT_INST)from fw_departments d 
 LEFT JOIN  
 (select e.F_SUM,c.ID_DEPARTMENT,c.ID_CONTRACT_INST from fw_contracts c  
@@ -14,7 +14,7 @@ AND c.DT_STOP>current_timestamp) contr
 ON contr.ID_DEPARTMENT=d.ID_DEPARTMENT 
 WHERE d.B_DELETED=0 
 GROUP BY d.V_NAME;
-
+--Задание 2
 select c.V_EXT_IDENT,c.V_STATUS,count(1)from fw_contracts c 
 WHERE  3<(select COUNT(1) from trans_external e 
 WHERE e.ID_CONTRACT=c.ID_CONTRACT_INST 
@@ -22,12 +22,12 @@ AND e.DT_EVENT>=to_date('2017-01-01','yyyy-mm-dd')
 AND e.DT_EVENT<to_date('2018-01-01','yyyy-mm-dd') 
 AND e.V_STATUS='A') 
 GROUP BY c.V_EXT_IDENT,c.V_STATUS;
-
+--Задание 3
 select d.V_NAME from fw_departments d  
 where d.B_DELETED=0  
 AND d.id_department NOT IN (select c.id_department from fw_contracts c )  
 GROUP BY d.V_NAME;
-
+--Задание 4
 SELECT count(1),MAX(e.DT_EVENT),c.V_EXT_IDENT,u.V_USERNAME FROM TRANS_EXTERNAL e 
 left JOIN CI_USERS u 
 ON U.ID_USER=E.ID_SOURCE 
