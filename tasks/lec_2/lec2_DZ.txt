@@ -1,0 +1,65 @@
+-Задание 1
+select d.V_NAME,SUM(contr.F_SUM),COUNT(contr.F_SUM),COUNT(contr.ID_CONTRACT_INST)from fw_departments d 
+LEFT JOIN  
+(select e.F_SUM,c.ID_DEPARTMENT,c.ID_CONTRACT_INST from fw_contracts c  
+LEFT JOIN trans_external e 
+ON e.ID_CONTRACT=c.ID_CONTRACT_INST 
+AND e.DT_EVENT>current_timestamp-interval’1’month 
+--хотела так: AND e.DT_EVET>max(tr.DT_EVENT)-interval'1'month; - не получилось 
+AND e.V_STATUS='A' 
+WHERE c.DT_START<=current_timestamp 
+AND c.DT_STOP>current_timestamp) contr  
+ON contr.ID_DEPARTMENT=d.ID_DEPARTMENT 
+WHERE d.B_DELETED=0 
+GROUP BY d.V_NAME;
+--Задание 2
+select c.V_EXT_IDENT,c.V_STATUS,count(1)from fw_contracts c 
+WHERE  3<(select COUNT(1) from trans_external e 
+WHERE e.ID_CONTRACT=c.ID_CONTRACT_INST 
+AND e.DT_EVENT>=to_date('2017-01-01','yyyy-mm-dd') 
+AND e.DT_EVENT<to_date('2018-01-01','yyyy-mm-dd') 
+AND e.V_STATUS='A') 
+WHERE c.DT_Stop>current_timestamp
+and c.DT_START<=current_timestamp
+and c.V_status='A'
+GROUP BY c.V_EXT_IDENT,c.V_STATUS;
+--Задание 3
+select d.V_NAME from fw_departments d  
+where d.B_DELETED=0  
+AND d.id_department NOT IN (select c.id_department from fw_contracts c )  
+GROUP BY d.V_NAME;
+--Задание4
+SELECT count(1),MAX(e.DT_EVENT),c.V_EXT_IDENT,u.V_USERNAME FROM TRANS_EXTERNAL e 
+left JOIN CI_USERS u 
+ON U.ID_USER=E.ID_SOURCE 
+left JOIN FW_CONTRACTS c 
+ON c.ID_CONTRACT_INST=e.ID_CONTRACT 
+AND c.DT_START<=current_timestamp 
+AND c.DT_STOP>current_timestamp 
+AND c.V_STATUS='A' 
+group by c.V_EXT_IDENT,u.V_USERNAME ;
+—Задание 5
+select c.id_contract_inst,c.v_ext_ident,cu.V_name from fw_currency cu
+join fw_contracts c
+ON C.ID_CURRENCY=cu.ID_CURRENCY
+AND c.DT_Stop>current_timestamp
+and c.DT_START<=current_timestamp
+and c.V_status='A'
+join (select c.id_contract_inst,c.v_ext_ident,count(distinct(c.id_currency))  from fw_contracts c
+HAVING COUNT(distinct(c.id_currency))>1
+group by c.id_contract_inst,c.v_ext_ident) CONTR
+ON CONTR.ID_CONTRACT_INST=C.ID_CONTRACT_INST;
+—Задание 6 
+--
+select sum(e.f_sum),c.id_contract_inst,d.v_name, to_char(e.dt_event,'year')from trans_external e
+join fw_contracts c
+ON c.ID_CONTRACT_INST=e.id_contract
+join fw_departments d
+ON d.id_department=c.id_department
+and d.b_deleted=0
+where e.v_status='A'
+group by (e.dt_event,'year'),c.id_contract_inst,d.v_name
+order by d.V_NAME;
+—Не понимаю, почему не работает группировка по году так, как здесь:
+select to_char(e.dt_event,'year'),sum(e.f_sum) from trans_external e
+group by to_char(e.dt_event,'year')
