@@ -1,0 +1,46 @@
+--Задание 1
+PROCEDURE saveSigners( pv_fio IN ci_users.V_DESCRIPTION%TYPE,
+pID_Manager IN ci_users.id_user%TYPE,
+pACTION IN NUMBER)
+BEGIN
+if NOT exists(select ci.id_user from ci_users ci
+where ci.id_user=pID_MANAGER) THEN
+raise_application_error(-20020,'Пользователь не найден');
+END IF;
+CASE 
+WHEN pACTION=1 THEN
+BEGIN
+INSERT  into scd_signers
+(V_FIO,ID_MANAGER)
+values (PV_FIO,pID_MANAGER);
+EXCEPTION WHEN
+EXISTS( SELECT * FROM scd_signers s
+where s.V_FIO=PV_FIO
+AND s.ID_MANAGER=pid_MANAGER)
+raise_application_error('Пользователь уже есть');
+END;
+WHEN pACTION=2 THEN
+UPDATE scd_signers S
+SET S.V_FIO=PV_FIO
+WHERE S.ID_MANAGER=pID_MANAGER;
+WHEN pACTION=3 THEN
+DELETE from scd_signers S
+where S.ID_MANAGER=pID_MANAGER;
+END CASE;
+END;
+--Задание 2
+function getDecoder (scd_equip_kits.id_equip_kits_inst IN NUMBER)
+RETURN NUMBER 
+IS
+BEGIN
+IF EXISTS(SELECT S.id_equip_kits_inst FROM scd_equip_kits S
+JOIN SCD_CONTRACTS C
+ON C.id_contract_inst=S.id_contract_inst
+AND C.B_AGENCY=1
+WHERE S.ID_STATUS='A')
+THEN return scd_equip_kits.v_cas_id;
+else return  scd_equip_kits.v_ext_ident
+end if;
+exception WHEN no_data_found THEN
+raise_application_error('Оборудование не найдено');
+end;
