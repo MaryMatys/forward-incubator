@@ -1,0 +1,59 @@
+--Задание1
+procedure  getCOMMUTATOR 
+(pDWR out sys_refcursor,
+PVendor in incb_commutator_type.V_VENDOR%TYPE,	
+PModel in incb_commutator_type.V_MODEL%TYPE,	
+PPort in incb_commutator_type.N_PORT%TYPE,
+PDescription in incb_commutator_type.V_DESCRIPTION%TYPE)
+--
+procedure SaveCommutator
+(PID_COMMUTATOR in incb_commutator.ID_COMMUTATOR%Type	
+PIP_ADDRESS in incb_commutator.IP_ADDRESS%Type	
+PID_COMMUTATOR_TYPE in incb_commutator.ID_COMMUTATOR_TYPE%Type
+PV_DESCRIPTION in incb_commutator.V_DESCRIPTION%Type
+PV_MAC_ADDRESS in incb_commutator.V_MAC_ADDRESS%Type
+PV_COMMUNITY_READ in incb_commutator.V_COMMUNITY_READ%Type NOT NULL
+PV_COMMUNITY_WRITE in incb_commutator.V_COMMUNITY_WRITE%Type NOT NULL
+PREMOTE_ID in incb_commutator.REMOTE_ID%Type
+PB_NEED_CONVERT_HEX in incb_commutator.B_NEED_CONVERT_HEX%Type
+PREMOTE_ID_HEX in incb_commutator.REMOTE_ID_HEX%Type
+PAction in Varchar2())
+is
+BEGIN
+case Paction
+when 'Create'then
+Insert into incb_commutator(ID_COMMUTATOR,IP_ADDRESS,ID_COMMUTATOR_TYPE,V_DESCRIPTION,V_MAC_ADDRESS,V_COMMUNITY_READ,
+V_COMMUNITY_WRITE,REMOTE_ID,B_NEED_CONVERT_HEX,REMOTE_ID_HEX)
+values(PID_COMMUTATOR,PIP_ADDRESS ,PID_COMMUTATOR_TYPE,PV_DESCRIPTION,PV_MAC_ADDRESS ,
+PV_COMMUNITY_READ ,PV_COMMUNITY_WRITE ,PREMOTE_ID ,PB_NEED_CONVERT_HEX ,PREMOTE_ID_HEX);
+commit;
+when'Update' then
+update incb_commutator set IP_ADDRESS=PIP_ADDRESS,ID_COMMUTATOR_TYPE=PID_COMMUTATOR_TYPE,V_DESCRIPTION=PV_DESCRIPTION,V_MAC_ADDRESS=PV_MAC_ADDRESS,
+V_COMMUNITY_READ=PV_COMMUNITY_READ,V_COMMUNITY_WRITE=PV_COMMUNITY_WRITE,REMOTE_ID=PREMOTE_ID,B_NEED_CONVERT_HEX=PB_NEED_CONVERT_HEX,REMOTE_ID_HEX=PREMOTE_ID_HEX
+WHERE ID_COMMUTATOR=PID_COMMUTATOR;
+when 'Delete' then
+update incb_commutator set B_deleted=1;
+end;
+
+--Задание 3
+FUNCTION get_remote_id
+(FId in incb_commutator.ID_COMMUTATOR%TYPE)
+return FREMOTE_ID
+is
+fID_HEX incb_commutator.REMOTE_ID_HEX%type
+FID  incb_commutator.REMOTE_ID%Type
+begin
+select * from incb_commutator c
+where c.id_commutator=FId;
+if (c.B_NEED_CONVERT_HEX=1)
+then 
+begin
+FID_HEX=c.REMOTE_ID_HEX
+exception 
+when c.REMOTE_ID_HEX is null then
+raise_application_error('Необходимо заполнить REMOTE_ID_HEX');
+end;
+else  
+FID=c.REMOTE_ID;
+end if;
+end;
